@@ -3,8 +3,8 @@ package bgfx_glfw
 import (
 	"unsafe"
 
-	glfw "github.com/go-gl/glfw3"
-	"github.com/james4k/go-bgfx"
+	"github.com/go-gl/glfw/v3.1/glfw"
+	"github.com/gmacd/go-bgfx"
 )
 
 func SetWindow(wnd *glfw.Window) {
