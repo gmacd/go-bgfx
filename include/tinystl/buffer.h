@@ -1,5 +1,5 @@
 /*-
- * Copyright 2012-1015 Matthew Endsley
+ * Copyright 2012 Matthew Endsley
  * All rights reserved
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,18 +55,6 @@ namespace tinystl {
 	}
 
 	template<typename T>
-	static inline void buffer_fill_urange_traits(T* first, T* last, pod_traits<T, false>) {
-		for (; first < last; ++first)
-			new(placeholder(), first) T();
-	}
-
-	template<typename T>
-	static inline void buffer_fill_urange_traits(T* first, T* last, pod_traits<T, true>) {
-		for (; first < last; ++first)
-			*first = T();
-	}
-
-	template<typename T>
 	static inline void buffer_fill_urange_traits(T* first, T* last, const T& value, pod_traits<T, false>) {
 		for (; first < last; ++first)
 			new(placeholder(), first) T(value);
@@ -118,11 +106,6 @@ namespace tinystl {
 	}
 
 	template<typename T>
-	static inline void buffer_fill_urange(T* first, T* last) {
-		buffer_fill_urange_traits(first, last, pod_traits<T>());
-	}
-
-	template<typename T>
 	static inline void buffer_fill_urange(T* first, T* last, const T& value) {
 		buffer_fill_urange_traits(first, last, value, pod_traits<T>());
 	}
@@ -135,7 +118,7 @@ namespace tinystl {
 	template<typename T, typename Alloc>
 	static inline void buffer_destroy(buffer<T, Alloc>* b) {
 		buffer_destroy_range(b->first, b->last);
-		Alloc::static_deallocate(b->first, (size_t)((char*)b->capacity - (char*)b->first));
+		Alloc::static_deallocate(b->first, (size_t)((char*)b->first - (char*)b->last));
 	}
 
 	template<typename T, typename Alloc>
@@ -155,15 +138,6 @@ namespace tinystl {
 	}
 
 	template<typename T, typename Alloc>
-	static inline void buffer_resize(buffer<T, Alloc>* b, size_t size) {
-		buffer_reserve(b, size);
-
-		buffer_fill_urange(b->last, b->first + size);
-		buffer_destroy_range(b->first + size, b->last);
-		b->last = b->first + size;
-	}
-
-	template<typename T, typename Alloc>
 	static inline void buffer_resize(buffer<T, Alloc>* b, size_t size, const T& value) {
 		buffer_reserve(b, size);
 
@@ -173,56 +147,28 @@ namespace tinystl {
 	}
 
 	template<typename T, typename Alloc>
-	static inline void buffer_shrink_to_fit(buffer<T, Alloc>* b) {
-		if (b->last == b->first) {
-			const size_t capacity = (size_t)(b->last - b->first);
-			Alloc::static_deallocate(b->first, sizeof(T)*capacity);
-			b->capacity = b->first;
-		} else if (b->capacity != b->last) {
-			const size_t size = (size_t)(b->last - b->first);
-			T* newfirst = (T*)Alloc::static_allocate(sizeof(T) * size);
-			buffer_move_urange(newfirst, b->first, b->last);
-			b->first = newfirst;
-			b->last = newfirst + size;
-			b->capacity = b->last;
-		}
-	}
-
-	template<typename T, typename Alloc>
 	static inline void buffer_clear(buffer<T, Alloc>* b) {
 		buffer_destroy_range(b->first, b->last);
 		b->last = b->first;
 	}
 
 	template<typename T, typename Alloc>
-	static inline T* buffer_insert_common(buffer<T, Alloc>* b, T* where, size_t count) {
+	static inline void buffer_insert(buffer<T, Alloc>* b, T* where, const T* first, const T* last) {
 		const size_t offset = (size_t)(where - b->first);
-		const size_t newsize = (size_t)((b->last - b->first) + count);
+		const size_t newsize = (size_t)((b->last - b->first) + (last - first));
 		if (b->first + newsize > b->capacity)
 			buffer_reserve(b, (newsize * 3) / 2);
 
 		where = b->first + offset;
+		const size_t count = (size_t)(last - first);
 
 		if (where != b->last)
 			buffer_bmove_urange(where + count, where, b->last);
 
-		b->last = b->first + newsize;
-
-		return where;
-	}
-
-	template<typename T, typename Alloc, typename Param>
-	static inline void buffer_insert(buffer<T, Alloc>* b, T* where, const Param* first, const Param* last) {
-		where = buffer_insert_common(b, where, last - first);
 		for (; first != last; ++first, ++where)
 			new(placeholder(), where) T(*first);
-	}
 
-	template<typename T, typename Alloc>
-	static inline void buffer_insert(buffer<T, Alloc>* b, T* where, size_t count) {
-		where = buffer_insert_common(b, where, count);
-		for (size_t i = 0; i < count; ++i)
-			new(placeholder(), where) T();
+		b->last = b->first + newsize;
 	}
 
 	template<typename T, typename Alloc>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 Branimir Karadzic. All rights reserved.
+ * Copyright 2011-2014 Branimir Karadzic. All rights reserved.
  * License: http://www.opensource.org/licenses/BSD-2-Clause
  */
 
@@ -8,7 +8,7 @@
 
 #if BX_PLATFORM_OSX
 
-namespace bgfx { namespace gl
+namespace bgfx
 {
 	struct SwapChainGL;
 
@@ -21,11 +21,11 @@ namespace bgfx { namespace gl
 
 		void create(uint32_t _width, uint32_t _height);
 		void destroy();
-		void resize(uint32_t _width, uint32_t _height, uint32_t _flags);
+		void resize(uint32_t _width, uint32_t _height, bool _vsync);
 
-		uint64_t getCaps() const;
+		static bool isSwapChainSupported();
 		SwapChainGL* createSwapChain(void* _nwh);
-		void destroySwapChain(SwapChainGL*  _swapChain);
+		void destorySwapChain(SwapChainGL*  _swapChain);
 		void swap(SwapChainGL* _swapChain = NULL);
 		void makeCurrent(SwapChainGL* _swapChain = NULL);
 
@@ -39,7 +39,7 @@ namespace bgfx { namespace gl
 		void* m_view;
 		void* m_context;
 	};
-} /* namespace gl */ } // namespace bgfx
+} // namespace bgfx
 
 #endif // BX_PLATFORM_OSX
 

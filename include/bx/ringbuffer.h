@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015 Branimir Karadzic. All rights reserved.
+ * Copyright 2010-2013 Branimir Karadzic. All rights reserved.
  * License: http://www.opensource.org/licenses/BSD-2-Clause
  */
 
@@ -40,7 +40,7 @@ namespace bx
 		uint32_t consume(uint32_t _size) // consumer only
 		{
 			const uint32_t maxSize    = distance(m_read, m_current);
-			const uint32_t sizeNoSign = uint32_and(_size, 0x7fffffff);
+			const uint32_t sizeNoSign = uint32_and(_size, 0x7FFFFFFF);
 			const uint32_t test       = uint32_sub(sizeNoSign, maxSize);
 			const uint32_t size       = uint32_sels(test, _size, maxSize);
 			const uint32_t advance    = uint32_add(m_read, size);
@@ -53,7 +53,7 @@ namespace bx
 		{
 			const uint32_t dist       = distance(m_write, m_read)-1;
 			const uint32_t maxSize    = uint32_sels(dist, m_size-1, dist);
-			const uint32_t sizeNoSign = uint32_and(_size, 0x7fffffff);
+			const uint32_t sizeNoSign = uint32_and(_size, 0x7FFFFFFF);
 			const uint32_t test       = uint32_sub(sizeNoSign, maxSize);
 			const uint32_t size       = uint32_sels(test, _size, maxSize);
 			const uint32_t advance    = uint32_add(m_write, size);
@@ -65,7 +65,7 @@ namespace bx
 		uint32_t commit(uint32_t _size) // producer only
 		{
 			const uint32_t maxSize    = distance(m_current, m_write);
-			const uint32_t sizeNoSign = uint32_and(_size, 0x7fffffff);
+			const uint32_t sizeNoSign = uint32_and(_size, 0x7FFFFFFF);
 			const uint32_t test       = uint32_sub(sizeNoSign, maxSize);
 			const uint32_t size       = uint32_sels(test, _size, maxSize);
 			const uint32_t advance    = uint32_add(m_current, size);
@@ -81,13 +81,6 @@ namespace bx
 			const uint32_t result = uint32_sels(diff, le, diff);
 
 			return result;
-		}
-
-		void reset()
-		{
-			m_current = 0;
-			m_write   = 0;
-			m_read    = 0;
 		}
 
 		const uint32_t m_size;
@@ -124,7 +117,7 @@ namespace bx
 		uint32_t consume(uint32_t _size) // consumer only
 		{
 			const uint32_t maxSize    = distance(m_read, m_current);
-			const uint32_t sizeNoSign = uint32_and(_size, 0x7fffffff);
+			const uint32_t sizeNoSign = uint32_and(_size, 0x7FFFFFFF);
 			const uint32_t test       = uint32_sub(sizeNoSign, maxSize);
 			const uint32_t size       = uint32_sels(test, _size, maxSize);
 			const uint32_t advance    = uint32_add(m_read, size);
@@ -137,7 +130,7 @@ namespace bx
 		{
 			const uint32_t dist       = distance(m_write, m_read)-1;
 			const uint32_t maxSize    = uint32_sels(dist, m_size-1, dist);
-			const uint32_t sizeNoSign = uint32_and(_size, 0x7fffffff);
+			const uint32_t sizeNoSign = uint32_and(_size, 0x7FFFFFFF);
 			const uint32_t test       = uint32_sub(sizeNoSign, maxSize);
 			const uint32_t size       = uint32_sels(test, _size, maxSize);
 			const uint32_t advance    = uint32_add(m_write, size);
@@ -149,7 +142,7 @@ namespace bx
 		uint32_t commit(uint32_t _size) // producer only
 		{
 			const uint32_t maxSize    = distance(m_current, m_write);
-			const uint32_t sizeNoSign = uint32_and(_size, 0x7fffffff);
+			const uint32_t sizeNoSign = uint32_and(_size, 0x7FFFFFFF);
 			const uint32_t test       = uint32_sub(sizeNoSign, maxSize);
 			const uint32_t size       = uint32_sels(test, _size, maxSize);
 			const uint32_t advance    = uint32_add(m_current, size);
@@ -169,13 +162,6 @@ namespace bx
 			const uint32_t result = uint32_sels(diff, le, diff);
 
 			return result;
-		}
-
-		void reset()
-		{
-			m_current = 0;
-			m_write   = 0;
-			m_read    = 0;
 		}
 
 		const uint32_t m_size;
@@ -215,11 +201,11 @@ namespace bx
 
 		void read(char* _data, uint32_t _len)
 		{
-			const uint32_t eof = (m_read + _len) % m_control.m_size;
+			const uint32_t end = (m_read + _len) % m_control.m_size;
 			uint32_t wrap = 0;
 			const char* from = &m_buffer[m_read];
 
-			if (eof < m_read)
+			if (end < m_read)
 			{
 				wrap = m_control.m_size - m_read;
 				memcpy(_data, from, wrap);
@@ -229,7 +215,7 @@ namespace bx
 
 			memcpy(_data, from, _len-wrap);
 
-			m_read = eof;
+			m_read = end;
 		}
 
 		void skip(uint32_t _len)
@@ -285,11 +271,11 @@ namespace bx
 
 		void write(const char* _data, uint32_t _len)
 		{
-			const uint32_t eof = (m_write + _len) % m_control.m_size;
+			const uint32_t end = (m_write + _len) % m_control.m_size;
 			uint32_t wrap = 0;
 			char* to = &m_buffer[m_write];
 
-			if (eof < m_write)
+			if (end < m_write)
 			{
 				wrap = m_control.m_size - m_write;
 				memcpy(to, _data, wrap);
@@ -299,16 +285,16 @@ namespace bx
 
 			memcpy(to, _data, _len-wrap);
 
-			m_write = eof;
+			m_write = end;
 		}
 
 		void write(ReadRingBufferT<Control>& _read, uint32_t _len)
 		{
-			const uint32_t eof = (_read.m_read + _len) % _read.m_control.m_size;
+			const uint32_t end = (_read.m_read + _len) % _read.m_control.m_size;
 			uint32_t wrap = 0;
 			const char* from = &_read.m_buffer[_read.m_read];
 
-			if (eof < _read.m_read)
+			if (end < _read.m_read)
 			{
 				wrap = _read.m_control.m_size - _read.m_read;
 				write(from, wrap);
@@ -317,7 +303,7 @@ namespace bx
 
 			write(from, _len-wrap);
 
-			_read.m_read = eof;
+			_read.m_read = end;
 		}
 
 		void skip(uint32_t _len)

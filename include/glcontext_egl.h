@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 Branimir Karadzic. All rights reserved.
+ * Copyright 2011-2014 Branimir Karadzic. All rights reserved.
  * License: http://www.opensource.org/licenses/BSD-2-Clause
  */
 
@@ -9,17 +9,15 @@
 #if BGFX_USE_EGL
 
 #include <EGL/egl.h>
-#include <EGL/eglext.h>
 
-namespace bgfx { namespace gl
+namespace bgfx
 {
 	struct SwapChainGL;
 
 	struct GlContext
 	{
 		GlContext()
-			: m_current(NULL)
-			, m_context(NULL)
+			: m_context(NULL)
 			, m_display(NULL)
 			, m_surface(NULL)
 		{
@@ -27,11 +25,11 @@ namespace bgfx { namespace gl
 
 		void create(uint32_t _width, uint32_t _height);
 		void destroy();
-		void resize(uint32_t _width, uint32_t _height, uint32_t _flags);
+		void resize(uint32_t _width, uint32_t _height, bool _vsync);
 
-		uint64_t getCaps() const;
+		static bool isSwapChainSupported();
 		SwapChainGL* createSwapChain(void* _nwh);
-		void destroySwapChain(SwapChainGL*  _swapChain);
+		void destorySwapChain(SwapChainGL*  _swapChain);
 		void swap(SwapChainGL* _swapChain = NULL);
 		void makeCurrent(SwapChainGL* _swapChain = NULL);
 
@@ -43,13 +41,12 @@ namespace bgfx { namespace gl
 		}
 
 		void* m_eglLibrary;
-		SwapChainGL* m_current;
 		EGLConfig  m_config;
 		EGLContext m_context;
 		EGLDisplay m_display;
 		EGLSurface m_surface;
 	};
-} /* namespace gl */ } // namespace bgfx
+} // namespace bgfx
 
 #endif // BGFX_USE_EGL
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 Branimir Karadzic. All rights reserved.
+ * Copyright 2011-2014 Branimir Karadzic. All rights reserved.
  * License: http://www.opensource.org/licenses/BSD-2-Clause
  */
 
@@ -9,11 +9,15 @@
 #define BGFX_CONFIG_RENDERER_DIRECT3D9EX (BX_PLATFORM_WINDOWS && 0)
 
 #if BX_PLATFORM_WINDOWS
-#	include <sal.h>
 #	if !BGFX_CONFIG_RENDERER_DIRECT3D9EX
-//#		define D3D_DISABLE_9EX
+#		define D3D_DISABLE_9EX
 #	endif // !BGFX_CONFIG_RENDERER_DIRECT3D9EX
 #	include <d3d9.h>
+
+#	if BGFX_CONFIG_RENDERER_DIRECT3D9EX
+typedef HRESULT (WINAPI *Direct3DCreate9ExFn)(UINT SDKVersion, IDirect3D9Ex**);
+#	endif // BGFX_CONFIG_RENDERER_DIRECT3D9EX
+typedef IDirect3D9* (WINAPI *Direct3DCreate9Fn)(UINT SDKVersion);
 
 #elif BX_PLATFORM_XBOX360
 #	include <xgraphics.h>
@@ -39,10 +43,9 @@
 #	define D3DSTREAMSOURCE_INSTANCEDATA (2<<30)
 #endif // D3DSTREAMSOURCE_INSTANCEDATA
 
-#include "renderer.h"
 #include "renderer_d3d.h"
 
-namespace bgfx { namespace d3d9
+namespace bgfx
 {
 #	if defined(D3D_DISABLE_9EX)
 #		define D3DFMT_S8_LOCKABLE D3DFORMAT( 85)
@@ -89,14 +92,6 @@ namespace bgfx { namespace d3d9
 #		define D3DFMT_RAWZ ( (D3DFORMAT)BX_MAKEFOURCC('R', 'A', 'W', 'Z') )
 #	endif // D3DFMT_RAWZ
 
-#	ifndef D3DFMT_S8_LOCKABLE
-#		define D3DFMT_S8_LOCKABLE ( (D3DFORMAT)85)
-#	endif // D3DFMT_S8_LOCKABLE
-
-#	ifndef D3DFMT_A1
-#		define D3DFMT_A1 ( (D3DFORMAT)118)
-#	endif // D3DFMT_A1
-
 	struct ExtendedFormat
 	{
 		enum Enum
@@ -130,13 +125,11 @@ namespace bgfx { namespace d3d9
 	{
 		IndexBufferD3D9()
 			: m_ptr(NULL)
-			, m_size(0)
-			, m_flags(BGFX_BUFFER_NONE)
 			, m_dynamic(false)
 		{
 		}
 
-		void create(uint32_t _size, void* _data, uint16_t _flags);
+		void create(uint32_t _size, void* _data);
 		void update(uint32_t _offset, uint32_t _size, void* _data, bool _discard = false)
 		{
 			void* buffer;
@@ -148,7 +141,7 @@ namespace bgfx { namespace d3d9
 
 			memcpy(buffer, _data, _size);
 
-			DX_CHECK(m_ptr->Unlock() );
+			m_ptr->Unlock();
 		}
 
 		void destroy()
@@ -165,7 +158,6 @@ namespace bgfx { namespace d3d9
 
 		IDirect3DIndexBuffer9* m_ptr;
 		uint32_t m_size;
-		uint16_t m_flags;
 		bool m_dynamic;
 	};
 
@@ -189,7 +181,7 @@ namespace bgfx { namespace d3d9
 
 			memcpy(buffer, _data, _size);
 
-			DX_CHECK(m_ptr->Unlock() );
+			m_ptr->Unlock();
 		}
 
 		void destroy()
@@ -339,7 +331,7 @@ namespace bgfx { namespace d3d9
 
 		void preReset();
 		void postReset();
-
+	
 		union
 		{
 			IDirect3DBaseTexture9*   m_ptr;
@@ -382,8 +374,6 @@ namespace bgfx { namespace d3d9
 		IDirect3DSurface9* m_depthStencil;
 		IDirect3DSwapChain9* m_swapChain;
 		HWND m_hwnd;
-		uint32_t m_width;
-		uint32_t m_height;
 
 		TextureHandle m_colorHandle[BGFX_CONFIG_MAX_FRAME_BUFFER_ATTACHMENTS-1];
 		TextureHandle m_depthHandle;
@@ -392,34 +382,6 @@ namespace bgfx { namespace d3d9
 		bool m_needResolve;
 	};
 
-	struct TimerQueryD3D9
-	{
-		TimerQueryD3D9()
-			: m_control(BX_COUNTOF(m_frame) )
-		{
-		}
-
-		void postReset();
-		void preReset();
-		void begin();
-		void end();
-		bool get();
-
-		struct Frame
-		{
-			IDirect3DQuery9* m_disjoint;
-			IDirect3DQuery9* m_start;
-			IDirect3DQuery9* m_end;
-			IDirect3DQuery9* m_freq;
-		};
-
-		uint64_t m_elapsed;
-		uint64_t m_frequency;
-
-		Frame m_frame[4];
-		bx::RingBufferControl m_control;
-	};
-
-} /* namespace d3d9 */ } // namespace bgfx
+} // namespace bgfx
 
 #endif // BGFX_RENDERER_D3D9_H_HEADER_GUARD

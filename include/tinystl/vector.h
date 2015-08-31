@@ -1,5 +1,5 @@
 /*-
- * Copyright 2012-1015 Matthew Endsley
+ * Copyright 2012 Matthew Endsley
  * All rights reserved
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,8 +38,8 @@ namespace tinystl {
 	public:
 		vector();
 		vector(const vector& other);
-		vector(size_t _size);
-		vector(size_t _size, const T& value);
+		vector(size_t size);
+		vector(size_t size, const T& value);
 		vector(const T* first, const T* last);
 		~vector();
 
@@ -50,30 +50,21 @@ namespace tinystl {
 		const T* data() const;
 		T* data();
 		size_t size() const;
-		size_t capacity() const;
 		bool empty() const;
 
 		T& operator[](size_t idx);
 		const T& operator[](size_t idx) const;
 
-		const T& front() const;
-		T& front();
 		const T& back() const;
 		T& back();
 
 		void resize(size_t size);
 		void resize(size_t size, const T& value);
 		void clear();
-		void reserve(size_t _capacity);
+		void reserve(size_t capacity);
 
 		void push_back(const T& t);
 		void pop_back();
-
-		void emplace_back();
-		template<typename Param>
-		void emplace_back(const Param& param);
-
-		void shrink_to_fit();
 
 		void swap(vector& other);
 
@@ -87,12 +78,8 @@ namespace tinystl {
 		const_iterator begin() const;
 		const_iterator end() const;
 
-		void insert(iterator where);
 		void insert(iterator where, const T& value);
 		void insert(iterator where, const T* first, const T* last);
-
-		template<typename Param>
-		void emplace(iterator where, const Param& param);
 
 		iterator erase(iterator where);
 		iterator erase(iterator first, iterator last);
@@ -117,15 +104,15 @@ namespace tinystl {
 	}
 
 	template<typename T, typename Alloc>
-	inline vector<T, Alloc>::vector(size_t _size) {
+	inline vector<T, Alloc>::vector(size_t size) {
 		buffer_init(&m_buffer);
-		buffer_resize(&m_buffer, _size);
+		buffer_resize(&m_buffer, size, T());
 	}
 
 	template<typename T, typename Alloc>
-	inline vector<T, Alloc>::vector(size_t _size, const T& value) {
+	inline vector<T, Alloc>::vector(size_t size, const T& value) {
 		buffer_init(&m_buffer);
-		buffer_resize(&m_buffer, _size, value);
+		buffer_resize(&m_buffer, size, value);
 	}
 
 	template<typename T, typename Alloc>
@@ -167,11 +154,6 @@ namespace tinystl {
 	}
 
 	template<typename T, typename Alloc>
-	inline size_t vector<T, Alloc>::capacity() const {
-		return (size_t)(m_buffer.capacity - m_buffer.first);
-	}
-
-	template<typename T, typename Alloc>
 	inline bool vector<T, Alloc>::empty() const {
 		return m_buffer.last == m_buffer.first;
 	}
@@ -187,16 +169,6 @@ namespace tinystl {
 	}
 
 	template<typename T, typename Alloc>
-	inline const T& vector<T, Alloc>::front() const {
-		return m_buffer.first[0];
-	}
-
-	template<typename T, typename Alloc>
-	inline T& vector<T, Alloc>::front() {
-		return m_buffer.first[0];
-	}
-
-	template<typename T, typename Alloc>
 	inline const T& vector<T, Alloc>::back() const {
 		return m_buffer.last[-1];
 	}
@@ -207,13 +179,13 @@ namespace tinystl {
 	}
 
 	template<typename T, typename Alloc>
-	inline void vector<T, Alloc>::resize(size_t _size) {
-		buffer_resize(&m_buffer, _size);
+	inline void vector<T, Alloc>::resize(size_t size) {
+		buffer_resize(&m_buffer, size, T());
 	}
 
 	template<typename T, typename Alloc>
-	inline void vector<T, Alloc>::resize(size_t _size, const T& value) {
-		buffer_resize(&m_buffer, _size, value);
+	inline void vector<T, Alloc>::resize(size_t size, const T& value) {
+		buffer_resize(&m_buffer, size, value);
 	}
 
 	template<typename T, typename Alloc>
@@ -222,8 +194,8 @@ namespace tinystl {
 	}
 
 	template<typename T, typename Alloc>
-	inline void vector<T, Alloc>::reserve(size_t _capacity) {
-		buffer_reserve(&m_buffer, _capacity);
+	inline void vector<T, Alloc>::reserve(size_t capacity) {
+		buffer_reserve(&m_buffer, capacity);
 	}
 
 	template<typename T, typename Alloc>
@@ -232,26 +204,8 @@ namespace tinystl {
 	}
 
 	template<typename T, typename Alloc>
-	inline void vector<T, Alloc>::emplace_back()
-	{
-		buffer_insert(&m_buffer, m_buffer.last, 1);
-	}
-
-	template<typename T, typename Alloc>
-	template<typename Param>
-	inline void vector<T, Alloc>::emplace_back(const Param& param)
-	{
-		buffer_insert(&m_buffer, m_buffer.last, &param, &param + 1);
-	}
-
-	template<typename T, typename Alloc>
 	inline void vector<T, Alloc>::pop_back() {
 		buffer_erase(&m_buffer, m_buffer.last - 1, m_buffer.last);
-	}
-
-	template<typename T, typename Alloc>
-	inline void vector<T, Alloc>::shrink_to_fit() {
-		buffer_shrink_to_fit(&m_buffer);
 	}
 
 	template<typename T, typename Alloc>
@@ -277,11 +231,6 @@ namespace tinystl {
 	template<typename T, typename Alloc>
 	inline typename vector<T, Alloc>::const_iterator vector<T,Alloc>::end() const {
 		return m_buffer.last;
-	}
-
-	template<typename T, typename Alloc>
-	inline void vector<T, Alloc>::insert(iterator where) {
-		buffer_insert(&m_buffer, where, 1);
 	}
 
 	template<typename T, typename Alloc>
@@ -313,12 +262,6 @@ namespace tinystl {
 	inline typename vector<T, Alloc>::iterator vector<T, Alloc>::erase_unordered(iterator first, iterator last) {
 		return buffer_erase_unordered(&m_buffer, first, last);
 	}
-
-	template<typename T, typename Alloc>
-	template<typename Param>
-	void vector<T, Alloc>::emplace(iterator where, const Param& param) {
-		buffer_insert(&m_buffer, where, &param, &param + 1);
-	}
 }
 
-#endif
+#endif 

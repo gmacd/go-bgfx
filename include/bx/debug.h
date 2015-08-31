@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015 Branimir Karadzic. All rights reserved.
+ * Copyright 2010-2013 Branimir Karadzic. All rights reserved.
  * License: http://www.opensource.org/licenses/BSD-2-Clause
  */
 
@@ -27,17 +27,12 @@ extern "C" void NSLog(CFStringRef _format, ...);
 
 namespace bx
 {
-#if BX_COMPILER_CLANG_ANALYZER
-	inline __attribute__((analyzer_noreturn)) void debugBreak();
-#endif // BX_COMPILER_CLANG_ANALYZER
-
 	inline void debugBreak()
 	{
 #if BX_COMPILER_MSVC
 		__debugbreak();
 #elif BX_CPU_ARM
-		__builtin_trap();
-//		asm("bkpt 0");
+		asm("bkpt 0");
 #elif !BX_PLATFORM_NACL && BX_CPU_X86 && (BX_COMPILER_GCC || BX_COMPILER_CLANG)
 		// NaCl doesn't like int 3:
 		// NativeClient: NaCl module load failed: Validation failure. File violates Native Client safety rules.

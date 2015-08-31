@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015 Branimir Karadzic. All rights reserved.
+ * Copyright 2010-2013 Branimir Karadzic. All rights reserved.
  * License: http://www.opensource.org/licenses/BSD-2-Clause
  */
 
@@ -24,14 +24,12 @@
 #	define BX_CONFIG_CRT_FILE_READER_WRITER (0 \
 				|| BX_PLATFORM_ANDROID \
 				|| BX_PLATFORM_FREEBSD \
-				|| BX_PLATFORM_EMSCRIPTEN \
 				|| BX_PLATFORM_IOS \
 				|| BX_PLATFORM_LINUX \
 				|| BX_PLATFORM_OSX \
 				|| BX_PLATFORM_QNX \
 				|| BX_PLATFORM_RPI \
 				|| BX_PLATFORM_WINDOWS \
-				|| BX_PLATFORM_WINRT \
 				? 1 : 0)
 #endif // BX_CONFIG_CRT_FILE_READER_WRITER
 
@@ -40,7 +38,7 @@
 #endif // BX_CONFIG_SEMAPHORE_PTHREAD
 
 #ifndef BX_CONFIG_SUPPORTS_THREADING
-#	define BX_CONFIG_SUPPORTS_THREADING !(BX_PLATFORM_EMSCRIPTEN)
+#	define BX_CONFIG_SUPPORTS_THREADING !(BX_PLATFORM_EMSCRIPTEN || BX_PLATFORM_WINRT)
 #endif // BX_CONFIG_SUPPORTS_THREADING
 
 #endif // BX_CONFIG_H_HEADER_GUARD

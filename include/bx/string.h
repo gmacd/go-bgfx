@@ -1,10 +1,10 @@
 /*
- * Copyright 2010-2015 Branimir Karadzic. All rights reserved.
+ * Copyright 2010-2013 Branimir Karadzic. All rights reserved.
  * License: http://www.opensource.org/licenses/BSD-2-Clause
  */
 
-#ifndef BX_STRING_H_HEADER_GUARD
-#define BX_STRING_H_HEADER_GUARD
+#ifndef BX_PRINTF_H_HEADER_GUARD
+#define BX_PRINTF_H_HEADER_GUARD
 
 #include "bx.h"
 #include <alloca.h>
@@ -26,7 +26,7 @@ namespace bx
 	/// Case insensitive string compare.
 	inline int32_t stricmp(const char* _a, const char* _b)
 	{
-#if BX_COMPILER_MSVC_COMPATIBLE
+#if BX_COMPILER_MSVC
 		return _stricmp(_a, _b);
 #else
 		return strcasecmp(_a, _b);
@@ -71,87 +71,6 @@ namespace bx
 		} while (0 != strncmp(_str, cmp, len) );
 
 		return --_str;
-	}
-
-	/// Find substring in string. Case insensitive.
-	inline const char* stristr(const char* _str, const char* _find)
-	{
-		const char* ptr = _str;
-
-		for (size_t len = strlen(_str), searchLen = strlen(_find)
-		    ; len >= searchLen
-		    ; ++ptr, --len)
-		{
-			// Find start of the string.
-			while (tolower(*ptr) != tolower(*_find) )
-			{
-				++ptr;
-				--len;
-
-				// Search pattern lenght can't be longer than the string.
-				if (searchLen > len)
-				{
-					return NULL;
-				}
-			}
-
-			// Set pointers.
-			const char* string = ptr;
-			const char* search = _find;
-
-			// Start comparing.
-			while (tolower(*string++) == tolower(*search++) )
-			{
-				// If end of the 'search' string is reached, all characters match.
-				if ('\0' == *search)
-				{
-					return ptr;
-				}
-			}
-		}
-
-		return NULL;
-	}
-
-	/// Find substring in string. Case insensitive. Limit search to _max.
-	inline const char* stristr(const char* _str, const char* _find, size_t _max)
-	{
-		const char* ptr = _str;
-
-		size_t       stringLen = strnlen(_str, _max);
-		const size_t findLen   = strlen(_find);
-
-		for (; stringLen >= findLen; ++ptr, --stringLen)
-		{
-			// Find start of the string.
-			while (tolower(*ptr) != tolower(*_find) )
-			{
-				++ptr;
-				--stringLen;
-
-				// Search pattern lenght can't be longer than the string.
-				if (findLen > stringLen)
-				{
-					return NULL;
-				}
-			}
-
-			// Set pointers.
-			const char* string = ptr;
-			const char* search = _find;
-
-			// Start comparing.
-			while (tolower(*string++) == tolower(*search++) )
-			{
-				// If end of the 'search' string is reached, all characters match.
-				if ('\0' == *search)
-				{
-					return ptr;
-				}
-			}
-		}
-
-		return NULL;
 	}
 
 	/// Find new line. Returns pointer after new line terminator.
@@ -503,4 +422,4 @@ namespace bx
 
 } // namespace bx
 
-#endif // BX_STRING_H_HEADER_GUARD
+#endif // BX_PRINTF_H_HEADER_GUARD
