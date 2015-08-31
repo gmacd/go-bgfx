@@ -8,7 +8,9 @@ plan is to get as much working as possible, with little concern for
 performance or API design. This mostly means implementing a number of
 the original bgfx examples and the necessary APIs.
 
-`go get github.com/james4k/go-bgfx`
+This is a fork of James Gray's earlier work on [go-bgfx](https://github.com/james4k/go-bgfx) and [go-bgfx-examples](https://github.com/james4k/go-bgfx-examples).
+
+`go get github.com/gmacd/go-bgfx`
 
 ### Examples
 
@@ -18,7 +20,7 @@ Installing and running the examples is simple, assuming you have your
 $GOPATH/bin setup in $PATH:
 
 ```
-$ go get github.com/james4k/go-bgfx-examples/...
+$ go get github.com/gmacd/go-bgfx-examples/...
 $ bgfx-01-cubes
 ```
 
